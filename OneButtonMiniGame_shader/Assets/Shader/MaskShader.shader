@@ -2,17 +2,24 @@ Shader "Unlit/MaskShader"
 {
     Properties
     {
-        _MainTex ("Texture", 2D) = "White" {}
-        _Color("Color", Color) = (1,1,1,1)
+        _MainTex ("Texture", 2D) = "black" {}
+        _Color("Color", Color) = (1,1,1,0.3)
     }
     SubShader
     {
         Tags { "RenderType"="Transparent" }
-        Tags { "Queue" = "Transparent" }
+        Tags { "Queue" = "Transparent+1" }
+        //Tags {"Queue"="Geometry+1"}
         Blend SrcAlpha OneMinusSrcAlpha 
+        //ZTest Always
 
         Pass
         {
+
+            Stencil{
+                Ref 2
+                Comp NotEqual
+            }
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag
@@ -50,7 +57,8 @@ Shader "Unlit/MaskShader"
             {
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv) * _Color;
-                col.a = _Color.a;
+                //fixed4 col = tex2D(_MainTex, i.uv);
+                //col.a = _Color.a;
                 // apply fog
                 //UNITY_APPLY_FOG(i.fogCoord, col);
                 return col;

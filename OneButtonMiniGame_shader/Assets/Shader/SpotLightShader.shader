@@ -3,20 +3,25 @@ Shader "Unlit/SpotLightShader"
     Properties
     {
         _Color("Color", Color) = (1,1,1,0)
-        _MainTex ("Texture", 2D) = "white" {}
+        _MainTex ("Texture", 2D) = "black" {}
         //_ColorMask ("Color Mask", Color) = (0,0,0,0)
     }
     SubShader
     {
         Tags { "RenderType"="Transparent" }
         Tags { "Queue" = "Transparent" }
+        //Tags { "IgnoreProjector"="True"}
         Blend SrcAlpha OneMinusSrcAlpha 
-        //Tags {"Queue" = "Geometry-1"}
-        //LOD 100
-        //ColorMask A
-        Zwrite On
+        LOD 100
+        ZTest Always
+        Cull Off
         Pass
         {
+            Stencil{
+                Ref 2
+                Comp Always
+                Pass Replace
+            }
             CGPROGRAM
 // Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members localPos)
 //#pragma exclude_renderers d3d11
@@ -49,6 +54,7 @@ Shader "Unlit/SpotLightShader"
             {
                 v2f o;
                 o.localPos = v.vertex.xyz;
+                //o.localPos = mul(unity_WorldToObject,v.vertex);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
@@ -61,10 +67,13 @@ Shader "Unlit/SpotLightShader"
                 // sample the texture
                 fixed4 col = tex2D(_MainTex, i.uv);
                 float dist = distance(fixed2(0,0),i.localPos);
-                _Color.a = (dist > 0) ? (1 - 1 / dist) : 1;
-                // apply fog
-                //UNITY_APPLY_FOG(i.fogCoord, col);
-                col = _Color;
+                _Color.a = (dist > 0) ? (1 - saturate(1 / (dist*3))) : 0;
+                //_Color.a = (_Color.a < 0) ? 0 : 1;
+                col *= _Color;
+                if(dist > 0.48)
+                {
+                    clip(-1);
+                }
                 return col;
             }
             ENDCG
