@@ -11,6 +11,8 @@ public class PlayerController : PlayerAnimator
     [SerializeField]GameManager game_manager;
     [SerializeField]public float init_player_position_x;
     [SerializeField]public float init_player_position_y;
+    [SerializeField]TreasureController treasure;
+    
     bool clear_wall_run = false;
     private SpriteRenderer renderer;
     private Transform transform;
@@ -162,7 +164,7 @@ public class PlayerController : PlayerAnimator
 
     public void TreasureDelete()
     {
-
+        treasure.transform.GetComponent<SpriteRenderer>().color = new Color(0,0,0,0);
     }
 
     public void ClearMoveStart()
@@ -177,7 +179,7 @@ public class PlayerController : PlayerAnimator
 
     public void ClearJump()
     {
-        transform.position = new Vector2(transform.position.x + 0.5f, transform.position.y);
+        transform.position = new Vector2(transform.position.x + 1.5f, transform.position.y);
     }
     public void ClearJumpEnd()
     {
