@@ -16,10 +16,10 @@ Shader "Unlit/MaskShader"
         Pass
         {
 
-            Stencil{
-                Ref 2
-                Comp NotEqual
-            }
+            // Stencil{
+            //     Ref 2
+            //     Comp NotEqual
+            // }
             CGPROGRAM
             #pragma vertex vert
             #pragma fragment frag

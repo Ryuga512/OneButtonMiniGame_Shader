@@ -2,8 +2,8 @@ Shader "Unlit/SpotLightAddShader"
 {
     Properties
     {
-        _Color("Color", Color) = (1,1,1,0.1)
-        _MainTex ("Texture", 2D) = "white" {}
+        //_Color("Color", Color) = (1,1,1,0.3)
+        _MainTex ("Texture", 2D) = "black" {}
         //_ColorMask ("Color Mask", Color) = (0,0,0,0)
     }
     SubShader
@@ -12,16 +12,17 @@ Shader "Unlit/SpotLightAddShader"
         Tags { "Queue" = "Transparent+2" }
         //Tags { "IgnoreProjector"="True"}
         Blend SrcAlpha OneMinusSrcAlpha 
+        //Blend One One
         LOD 100
         ZTest Always
         Cull Off
          Pass
          {
-        //     Stencil{
-        //         Ref 2
-        //         Comp Always
-        //         Pass Replace
-             //}
+            // Stencil{
+            //     Ref 1
+            //     Comp Always
+            //     Pass Replace
+            //  }
             CGPROGRAM
 // Upgrade NOTE: excluded shader from DX11; has structs without semantics (struct v2f members localPos)
 //#pragma exclude_renderers d3d11
@@ -45,16 +46,23 @@ Shader "Unlit/SpotLightAddShader"
                 float2 localPos : TEXCOORD1;
                 float4 vertex : SV_POSITION;
             };
-
+            float half_size_x;
+            float half_size_y;
             //float4 _ColorMask;
+            //float localPos_x;
+            //float localPos_y;
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            float4 _Color;
+            //float4 _Color;
+            float4 color_1;
+            float4 color_2;
             v2f vert (appdata v)
             {
                 v2f o;
                 o.localPos = v.vertex.xyz;
-                //o.localPos = mul(unity_WorldToObject,v.vertex);
+                // o.localPos.x = localPos_x;
+                // o.localPos.y = localPos_y;
+                //o.localPos = v.vertex - mul(unity_WorldToObject,v.vertex);
                 o.vertex = UnityObjectToClipPos(v.vertex);
                 o.uv = TRANSFORM_TEX(v.uv, _MainTex);
 
@@ -64,16 +72,46 @@ Shader "Unlit/SpotLightAddShader"
 
             fixed4 frag (v2f i) : SV_Target
             {
-                // sample the texture
+                //float4 color_1 = (1,1,1,0.3);
+                //float4 color_2 = _Color;
+                //float4 color_1 = (1,1,1,0.3);
+                //float4 color_2 = (0,0,0,0);
+//***************************************************************
+                // fixed4 col = tex2D(_MainTex, i.uv);
+
+                // float dist = distance(fixed2(0,0),i.localPos);
+                
+                // float dist_half = distance(fixed2(0,0), (half_size_x,half_size_y));
+                // float4 _Color = lerp(color_1,color_2, (dist)/dist_half);
+
+                // col *= _Color;
+
+
+//****************************************************************
+                const float PI = 3.14159;
                 fixed4 col = tex2D(_MainTex, i.uv);
-                float dist = distance(fixed2(0,0),i.localPos);
-                _Color.a = (dist > 0) ? (1 - saturate(1 / (dist*3))) : 0;
-                //_Color.a = (_Color.a < 0) ? 0 : 1;
+                float2 half_size;
+                half_size.x = half_size_x;
+                half_size.y = half_size_y;
+                float dist = distance((0,0), i.localPos.xy/(PI*half_size.xy));
+                float4 _Color = lerp(color_1,color_2, dist*10);
                 col *= _Color;
-                if(dist > 0.48)
-                {
-                    clip(-1);
-                }
+
+                //端のごみを消去
+                // if(dist*3 > 0.8)
+                // {
+                //     clip(-1);
+                // }
+//********************************************************************
+                // const float PI = 3.14159;
+                // fixed4 col = tex2D(_MainTex, i.uv);
+                // float2 half_size;
+                // half_size.x = half_size_x;
+                // half_size.y = half_size_y;
+                // float dist = (half_size.y-i.localPos.y)/(half_size.x-i.localPos.x);
+                // float4 _Color = lerp(color_1,color_2, dist/5);
+                // col *= _Color;
+
                 return col;
             }
             ENDCG

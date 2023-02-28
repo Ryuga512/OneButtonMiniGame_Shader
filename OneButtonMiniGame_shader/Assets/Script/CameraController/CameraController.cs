@@ -7,7 +7,7 @@ public class CameraController : CinemachineExtension
     public GameManager game_manager;
     public CinemachineVirtualCameraBase _CinemachineVirtualCameraBase;
     public CinemachineTargetGroup target;
-    public PlayerController player = new PlayerController();
+    public PlayerController player;
     int count = 0;
     [Tooltip("Lock the camera's Y position to this value")]
     public float m_XPosition = 29.3f;
